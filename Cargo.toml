@@ -1,0 +1,59 @@
+[package]
+name = "blinky_esp32c3_embassy"
+version = "0.1.0"
+authors = ["Vinicius Queiroz <vini.apq@gmail.com>"]
+edition = "2021"
+resolver = "2"
+rust-version = "1.77"
+
+[[bin]]
+name = "blinky_esp32c3_embassy"
+harness = false # do not use the built in cargo test harness -> resolve rust-analyzer errors
+
+[profile.release]
+opt-level = "s"
+
+[profile.dev]
+debug = true    # Symbols are nice and they don't increase the size on Flash
+opt-level = "z"
+
+[features]
+default = []
+
+experimental = ["esp-idf-svc/experimental"]
+
+[dependencies]
+static_cell = "2"
+log = "0.4"
+toml-cfg    = "=0.2.0"
+embedded-svc = "0.28.1"
+esp-idf-sys = "0.36.1"
+# esp-idf-svc = "0.51"
+
+# --- Optional Embassy Integration ---
+# esp-idf-svc = { version = "0.51", features = ["critical-section", "embassy-time-driver", "embassy-sync"] }
+
+# If you enable embassy-time-driver, you MUST also add one of:
+
+# a) Standalone Embassy libs ( embassy-time, embassy-sync etc) with a foreign async runtime:
+# embassy-time = { version = "0.4.0", features = ["generic-queue-8"] } # NOTE: any generic-queue variant will work
+
+# b) With embassy-executor:
+embassy-executor = { version = "0.7.0", features = ["executor-thread", "arch-std"]  }
+embassy-time = "0.5.0"
+embassy-sync = { version = "0.7.2", features = ["std"] }
+# NOTE: if you use embassy-time with embassy-executor you don't need the generic-queue-8 feature
+
+# --- Temporary workaround for embassy-executor < 0.8 ---
+esp-idf-svc = { version = "0.51", features = ["embassy-time-driver"] }
+critical-section = { version = "1.1", features = ["std"], default-features = false }
+
+[build-dependencies]
+embuild = "0.33.1"
+toml-cfg    = "=0.2.0"
+
+[package.metadata.esp-idf-sys]
+extra_components = [
+    { remote_component = { name = "espressif/mdns", version = "1.8.2" } },
+    # { component_dirs = "components/esp32-camera", bindings_header = "components/bindings.h", bindings_module = "camera" }
+]
