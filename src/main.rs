@@ -6,14 +6,10 @@ use esp_idf_svc::hal::gpio::{
 use esp_idf_svc::hal::gpio::{PinDriver};
 use esp_idf_svc::hal::peripherals;
 
-use esp_idf_svc::hal::ledc::{Resolution};
-use esp_idf_svc::hal::ledc::{config::TimerConfig, LedcDriver, LedcTimerDriver};
-use esp_idf_svc::hal::units::Hertz;
-
 mod wifi_connection;
 
 fn init() {
-    let link_patches = esp_idf_svc::sys::link_patches();
+    _ = esp_idf_svc::sys::link_patches();
     esp_idf_svc::log::EspLogger::initialize_default();
 }
 
@@ -24,12 +20,12 @@ async fn main(spawner: Spawner) {
     let peripherals = peripherals::Peripherals::take().unwrap();
 
     log::info!("Hello, world!"); 
+    let _wifi = wifi_connection::async_connect_wifi(peripherals.modem).await;
 
     let led_gpio = peripherals.pins.gpio8.downgrade_output();
     let led_pin = gpio::PinDriver::output(led_gpio).unwrap();
     spawner.spawn(blink_task(led_pin)).unwrap();
 
-    let _wifi = wifi_connection::async_connect_wifi(peripherals.modem).await;
 
     std::mem::forget(_wifi);
 }
